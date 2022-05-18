@@ -1,0 +1,90 @@
+
+{% extends 'dependencies.html' %}
+{% include 'templates/images' %}
+{% block content %}
+
+<div class="modal-popup">
+        <div class="modal fade" id="success" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <form action="" method="POST">
+
+                    <div class="modal-content">
+                        <div class="modal-header text-success text-bold">
+                        Successfully Added to cart
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+<div class="container ">
+<h1>Products</h1>
+     <div class="row text-right">
+        <a class="text-right" href="{% url 'getCartItem' request.user.id %}">Go To Cart</a>
+    </div>
+<div class="card-columns" style="padding: 10px; margin: 20px;">
+{% for p  in products%}
+    <div class="card" style="width: 18rem; border:5px black solid">
+        <img class="card-img-top" src="download_media/{{p.image}}" alt="Card image cap">
+        <script>console.log()</script>
+        <div class="card-body">
+        <h5 class="card-title">{{p.name}}</h5>
+        <p class="card-text">{{p.description}}</p>
+            <p class="text-danger" id="quant{{p.id}}">Hurry only {{p.quantity}} pieces left!!</p>
+        </div>
+        <div class="card-footer">
+            <span>
+                <p>Rs.{{p.price}}</p>
+            </span>
+        <button class="text-right" style="position:relative;bottom:5px;left:45px" onclick="addCart({{p.id}},{{p.quantity}})">Add to cart </button>
+                <input type="number" class="form-control col-md-3"  style="position:relative;left:150px;bottom:35px" id="quantity{{p.id}}" name="quantity">
+        <p class="text-danger" id="error{{p.id}}" hidden="hidden">Please Select Atleast one quantity</p>
+        <p class="text-danger" id="error1{{p.id}}" hidden="hidden">Required Quantity Not Available</p>
+        </div>
+    </div>
+ {% endfor %}
+
+
+</div>
+    <script>
+        function addCart(id,max){
+        console.log(id)
+        document.getElementById("error"+id).setAttribute("hidden","hidden")
+        quantity = $("#quantity"+id)[0].value
+
+        console.log($("#quantity"+id)[0].value)
+        if(quantity==0){
+       document.getElementById("error"+id).removeAttribute("hidden")
+        }
+        if(quantity>max){
+        document.getElementById("error1"+id).removeAttribute("hidden")
+        }
+        if(quantity!=0 & quantity<=max){
+        {% if request.user.id %}
+        console.log("Adding to cart..")
+        $.ajax({
+        type:'post',
+        url:"/shop/addToCart/"+id+"/"+{{request.user.id}},
+        data:{
+        quantity:quantity,
+        csrfmiddlewaretoken:'{{csrf_token}}'
+        },
+        success:function(response){
+        $("#success").modal()
+        window.location.reload
+
+        }
+
+        });
+}
+        {% else %}
+}
+        window.location.href="http://127.0.0.1:8000/shop/login"
+
+        {% endif %}
+        }
+
+    </script>
+{% endblock %}
